@@ -67,14 +67,28 @@ jobs:
           if [ -f app/src/main/AndroidManifest.xml ]; then
             sed -i 's|android:icon="@mipmap/ic_launcher"|android:icon="@android:drawable/sym_def_app_icon"|g' app/src/main/AndroidManifest.xml
             sed -i 's|android:roundIcon="@mipmap/ic_launcher_round"||g' app/src/main/AndroidManifest.xml
+            # Warning တက်နေတဲ့ package="..." စာသားကိုပါ တစ်ခါတည်း ဖြတ်ထုတ်သန့်ရှင်းရေးလုပ်ခြင်း
+            sed -i 's|package="com.mguard.vpn"||g' app/src/main/AndroidManifest.xml
           fi
 
-      # ၄။ Android Debug APK ကို တည်ဆောက်ခြင်း
+      # ၄။ 🚨 AAPT 'vpn' Error ကို ကျော်လွှားရန် Gradle Build Tools ဗားရှင်းအား အတင်းမြှင့်တင်ခြင်း (Force BuildTools 34)
+      - name: Force SDK 34 and Build Tools 34 inside build.gradle
+        run: |
+          if [ -f app/build.gradle ]; then
+            # build.gradle ထဲက compileSdk နဲ့ targetSdk နေရာအားလုံးကို 34 သို့ အတင်းလဲလှယ်ပစ်ခြင်း
+            sed -i 's/compileSdk.*/compileSdk 34/g' app/build.gradle
+            sed -i 's/targetSdk.*/targetSdk 34/g' app/build.gradle
+            
+            # buildToolsVersion 34.0.0 ကို ပါဝါသုံးပြီး အတင်းထည့်သွင်းခြင်း (၎င်းသည် AAPT 'vpn' ပြဿနာကို အမြစ်ပြတ်စေပါသည်)
+            sed -i '/android {/a \    buildToolsVersion "34.0.0"' app/build.gradle
+          fi
+
+      # ၅။ Android Debug APK ကို တည်ဆောက်ခြင်း
       - name: Build Android Debug APK
         shell: bash
         run: ./gradlew assembleDebug
 
-      # ၅။ ထွက်လာသော APK ဖိုင်ကို တင်ပေးခြင်း
+      # ၆။ ထွက်လာသော APK ဖိုင်ကို တင်ပေးခြင်း
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
