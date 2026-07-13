@@ -31,13 +31,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # gradlew ရော gradle-wrapper.properties ရောကို စိတ်ချရအောင် အသစ်ပြန်ဆောက်ခိုင်းတာဖြစ်ပါတယ်
-      - name: Regenerate Clean Gradle Wrapper
+      # 1. အဟောင်းတွေကို ဖြတ်ထုတ်မယ်
+      - name: Clean Old Gradle Wrapper
         run: |
           rm -f gradlew
           rm -rf gradle/wrapper
-          sudo apt-get update && sudo apt-get install -y gradle
-          gradle wrapper --gradle-version 8.4
+
+      # 2. ပြင်ပကနေ Gradle အသစ်သွင်းမယ့်အစား GitHub Action သုံးပြီး ခေတ္တ Setup လုပ်မယ်
+      - name: Setup Temporary Gradle for Regeneration
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.4
+
+      # 3. ဗားရှင်း 8.4 ရှိတဲ့ Wrapper အသစ်ကို ပရောဂျက်ထဲ ပြန်ထုတ်ပေးမယ်
+      - name: Regenerate Clean Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.4
 
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
