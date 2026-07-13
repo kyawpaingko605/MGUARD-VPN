@@ -4,8 +4,12 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    
+    <!-- Android Foreground Service မောင်းနှင်ရန် Permission -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    
+    <!-- 🛡️ Android 14+ (API 34+) တွင် VPN မောင်းနှင်ရန် အဓိက လိုအပ်သော Permission (မဖြစ်မနေ ထည့်ရပါမည်) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_VPN" />
 
     <application
         android:allowBackup="true"
@@ -25,9 +29,11 @@
             </intent-filter>
         </activity>
 
+        <!-- 🛠️ LocalVpnService အား Android 14+ ပေါ်တွင် အလုပ်လုပ်နိုင်ရန် ပြင်ဆင်ထားမှု -->
         <service
             android:name=".LocalVpnService"
             android:permission="android.permission.BIND_VPN_SERVICE"
+            android:foregroundServiceType="vpn"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
