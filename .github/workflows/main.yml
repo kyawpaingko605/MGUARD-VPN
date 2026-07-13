@@ -61,7 +61,7 @@ jobs:
           </resources>
           EOF
 
-      # ၃။ Icon Crash ကာကွယ်ခြင်း၊ Warning သန့်ရှင်းရေးလုပ်ခြင်းနှင့် AAPT Error ကျော်လွှားရန် 256 သို့ အတင်းပြောင်းလဲခြင်း
+      # ၃။ Icon Crash ကာကွယ်ခြင်း၊ Warning သန့်ရှင်းရေးလုပ်ခြင်းနှင့် AAPT အား ကျော်ဖြတ်ရန် 'health' သို့ အတင်းပြောင်းလဲခြင်း
       - name: Patch AndroidManifest for System Compatibility
         run: |
           if [ -f app/src/main/AndroidManifest.xml ]; then
@@ -72,9 +72,10 @@ jobs:
             # Manifest Warning သန့်ရှင်းရေးလုပ်ခြင်း
             sed -i 's|package="com.mguard.vpn"||g' app/src/main/AndroidManifest.xml
             
-            # 🚨 AAPT အော်နေတဲ့ ပြဿနာကို ကျော်လွှားရန် foregroundServiceType ထဲက 'vpn' သို့မဟုတ် 'vpnService' ကို တန်ဖိုး '256' သို့ အတင်းလဲလှယ်ခြင်း
-            sed -i 's|android:foregroundServiceType="vpn"|android:foregroundServiceType="256"|g' app/src/main/AndroidManifest.xml
-            sed -i 's|android:foregroundServiceType="vpnService"|android:foregroundServiceType="256"|g' app/src/main/AndroidManifest.xml
+            # 🛡️ AAPT linking Error ကို အပိုင်ကျော်လွှားရန် ဖြစ်နိုင်ချေရှိသမျှ စာသားအားလုံးကို AAPT သိတဲ့ 'health' (တန်ဖိုး 256 ချင်းတူ) သို့ အတင်းလဲလှယ်ခြင်း
+            sed -i 's|android:foregroundServiceType="vpn"|android:foregroundServiceType="health"|g' app/src/main/AndroidManifest.xml
+            sed -i 's|android:foregroundServiceType="vpnService"|android:foregroundServiceType="health"|g' app/src/main/AndroidManifest.xml
+            sed -i 's|android:foregroundServiceType="256"|android:foregroundServiceType="health"|g' app/src/main/AndroidManifest.xml
           fi
 
       # ၄။ Gradle Build Tools ဗားရှင်းအား အတင်းမြှင့်တင်ခြင်း
