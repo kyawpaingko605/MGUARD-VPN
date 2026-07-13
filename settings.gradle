@@ -4,7 +4,6 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
-    // အောက်က plugins ဆိုတဲ့ block လေးကို အသစ်ထည့်ပေးလိုက်တာပါ
     plugins {
         id 'com.android.application' version '8.2.0'
         id 'com.android.library' version '8.2.0'
