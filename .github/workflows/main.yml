@@ -31,14 +31,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # ၁။ gradlew ထဲက sh နေရာမှာ bash ပြောင်းပြီး Syntax Error မတက်အောင် ဖြေရှင်းခြင်း
+      # ၁။ gradlew Syntax Error မတက်အောင် ဖြေရှင်းခြင်း
       - name: Fix Gradlew Shebang and Grant Permission
         run: |
           sed -i 's|#!/usr/bin/env sh|#!/usr/bin/env bash|g' gradlew
           sed -i 's|#!/bin/sh|#!/usr/bin/env bash|g' gradlew
           chmod +x gradlew
 
-      # ၂။ မူရင်းကုဒ်မပျက်စေဘဲ ပျောက်ဆုံးနေတဲ့ ကာလာ၊ သီမ်း ဖိုင်များကို ယာယီဖြည့်ဆောက်ခြင်း
+      # ၂။ ပျောက်ဆုံးနေတဲ့ ကာလာ၊ သီမ်း ဖိုင်များကို ယာယီဖြည့်ဆောက်ခြင်း
       - name: Generate Missing Dummy Resources
         run: |
           mkdir -p app/src/main/res/values
@@ -61,40 +61,21 @@ jobs:
           </resources>
           EOF
 
-      # ၃။ Icon Crash ကာကွယ်ခြင်း၊ Warning သန့်ရှင်းရေးလုပ်ခြင်းနှင့် AAPT အား ကျော်ဖြတ်ရန် 'health' သို့ အတင်းပြောင်းလဲခြင်း
+      # ၃။ Icon Configuration နှင့် Warning များကို သန့်ရှင်းရေးလုပ်ခြင်း
       - name: Patch AndroidManifest for System Compatibility
         run: |
           if [ -f app/src/main/AndroidManifest.xml ]; then
-            # Icon များကို Default ပြောင်းခြင်း
             sed -i 's|android:icon="@mipmap/ic_launcher"|android:icon="@android:drawable/sym_def_app_icon"|g' app/src/main/AndroidManifest.xml
             sed -i 's|android:roundIcon="@mipmap/ic_launcher_round"||g' app/src/main/AndroidManifest.xml
-            
-            # Manifest Warning သန့်ရှင်းရေးလုပ်ခြင်း
             sed -i 's|package="com.mguard.vpn"||g' app/src/main/AndroidManifest.xml
-            
-            # AAPT linking Error ကို အပိုင်ကျော်လွှားရန် 'health' (256) သို့ အတင်းလဲလှယ်ခြင်း
-            sed -i 's|android:foregroundServiceType="vpn"|android:foregroundServiceType="health"|g' app/src/main/AndroidManifest.xml
-            sed -i 's|android:foregroundServiceType="vpnService"|android:foregroundServiceType="health"|g' app/src/main/AndroidManifest.xml
-            sed -i 's|android:foregroundServiceType="256"|android:foregroundServiceType="health"|g' app/src/main/AndroidManifest.xml
           fi
 
-      # ၄။ Gradle Build Tools ဗားရှင်းနှင့် Java Target Compatibility အားလုံးကို ဗားရှင်း 17 သို့ အတင်းသတ်မှတ်ခြင်း
-      - name: Force SDK 34, Build Tools 34, and Java 17 Compatibility
-        run: |
-          if [ -f app/build.gradle ]; then
-            sed -i 's/compileSdk.*/compileSdk 34/g' app/build.gradle
-            sed -i 's/targetSdk.*/targetSdk 34/g' app/build.gradle
-            
-            # buildToolsVersion နှင့် Java 17 Target Options များကို အတင်းဖြည့်သွင်းခြင်း
-            sed -i '/android {/a \    buildToolsVersion "34.0.0"\n    compileOptions {\n        sourceCompatibility = JavaVersion.VERSION_17\n        targetCompatibility = JavaVersion.VERSION_17\n    }\n    kotlinOptions {\n        jvmTarget = "17"\n    }' app/build.gradle
-          fi
-
-      # ၅။ Android Debug APK ကို တည်ဆောက်ခြင်း
+      # ၄။ Android Debug APK ကို တည်ဆောက်ခြင်း
       - name: Build Android Debug APK
         shell: bash
         run: ./gradlew assembleDebug
 
-      # ၆။ ထွက်လာသော APK ဖိုင်ကို တင်ပေးခြင်း
+      # ၅။ ထွက်လာသော APK ဖိုင်ကို တင်ပေးခြင်း
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
