@@ -68,12 +68,21 @@ jobs:
           </resources>
           EOF
 
-      # ၃။ Android Debug APK ကို တည်ဆောက်ခြင်း
+      # ၃။ မူရင်းကုဒ်မပျက်စေဘဲ app/build.gradle ထဲက Java target Compatibility ကို ဗားရှင်း 17 သို့ အလိုအလျောက် ပြောင်းလဲခြင်း
+      - name: Fix Java and Kotlin JVM Target to 17
+        run: |
+          if [ -f app/build.gradle ]; then
+            sed -i 's/sourceCompatibility JavaVersion.VERSION_1_8/sourceCompatibility JavaVersion.VERSION_17/g' app/build.gradle
+            sed -i 's/targetCompatibility JavaVersion.VERSION_1_8/targetCompatibility JavaVersion.VERSION_17/g' app/build.gradle
+            sed -i "s/jvmTarget = '1.8'/jvmTarget = '17'/g" app/build.gradle
+          fi
+
+      # ၄။ Android Debug APK ကို တည်ဆောက်ခြင်း
       - name: Build Android Debug APK
         shell: bash
         run: ./gradlew assembleDebug
 
-      # ၄။ ထွက်လာသော APK ဖိုင်ကို တင်ပေးခြင်း
+      # ၅။ ထွက်လာသော APK ဖိုင်ကို တင်ပေးခြင်း
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
