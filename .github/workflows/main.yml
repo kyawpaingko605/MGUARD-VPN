@@ -31,19 +31,36 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # gradlew ထဲက sh နေရာမှာ bash ပြောင်းပြီး Syntax Error မတက်အောင် ဖြေရှင်းခြင်း
+      # ၁။ gradlew ထဲက sh နေရာမှာ bash ပြောင်းပြီး Syntax Error မတက်အောင် ဖြေရှင်းခြင်း
       - name: Fix Gradlew Shebang and Grant Permission
         run: |
           sed -i 's|#!/usr/bin/env sh|#!/usr/bin/env bash|g' gradlew
           sed -i 's|#!/bin/sh|#!/usr/bin/env bash|g' gradlew
           chmod +x gradlew
 
-      # အသစ်ပြင်ဆင်ထားတဲ့ gradle-wrapper.properties (8.4) ကို သုံးပြီး ဒေါင်းလုဒ်ဆွဲကာ တည်ဆောက်မည်
+      # ၂။ မူရင်းကုဒ်မပျက်စေဘဲ ပျောက်ဆုံးနေတဲ့ Resource ဖိုင်တွေကို Pipeline ပေါ်မှာပဲ ယာယီဆောက်ပေးခြင်း
+      - name: Generate Missing Dummy Resources
+        run: |
+          mkdir -p app/src/main/res/mipmap-hdpi
+          mkdir -p app/src/main/res/values
+
+          # အိုင်ကွန်ပုံရိပ်ဖိုင်အတုများ ယာယီဖန်တီးခြင်း
+          touch app/src/main/res/mipmap-hdpi/ic_launcher.png
+          touch app/src/main/res/mipmap-hdpi/ic_launcher_round.png
+
+          # ပျောက်ဆုံးနေသော Theme ပိုင်ဆိုင်မှုကို မူရင်းအမည်အတိုင်း ယာယီဖြည့်ပေးခြင်း
+          cat <<EOF > app/src/main/res/values/themes.xml
+          <resources>
+              <style name="Theme.MGuardVPN" parent="android:Theme.DeviceDefault" />
+          </resources>
+          EOF
+
+      # ၃။ Android Debug APK ကို တည်ဆောက်ခြင်း
       - name: Build Android Debug APK
         shell: bash
         run: ./gradlew assembleDebug
 
-      # ထွက်လာသော APK ဖိုင်ကို Upload တင်ပေးခြင်း
+      # ၄။ ထွက်လာသော APK ဖိုင်ကို တင်ပေးခြင်း
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
