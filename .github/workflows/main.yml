@@ -31,38 +31,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # ၁။ ရှိပြီးသား အဟောင်း (သို့မဟုတ်) ပျက်စီးနေသော Wrapper များကို အရင်ဦးဆုံး ရှင်းလင်းရေးလုပ်မည်
-      - name: Clean Old Gradle Wrapper
-        run: |
-          rm -f gradlew
-          rm -rf gradle/wrapper
-
-      # ၂။ GitHub Action ကို အသုံးပြုပြီး Gradle 8.4 ကို စနစ်အတွင်း ယာယီတပ်ဆင်မည်
-      - name: Setup Temporary Gradle for Regeneration
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: 8.4
-
-      # ၃။ အရေးကြီးဆုံးအဆင့် - ဖိုဒါအလွတ်တစ်ခုဆောက်၍ ပရောဂျက်ဖိုင်များကို ဝင်မဖတ်ဘဲ Wrapper အသစ်သန့်သန့်ကို ထုတ်ယူမည်
-      - name: Regenerate Clean Gradle Wrapper
-        run: |
-          mkdir temp-wrapper
-          cd temp-wrapper
-          gradle wrapper --gradle-version 8.4 --no-daemon
-          cd ..
-          mv temp-wrapper/gradlew ./gradlew
-          mv temp-wrapper/gradle/wrapper ./gradle/wrapper
-          rm -rf temp-wrapper
-
-      # ၄။ ရရှိလာသော gradlew ဖိုင်ကို Run ခွင့် (Permission) ပေးမည်
+      # ယခု ရရှိလာတဲ့ gradlew ကို run နိုင်အောင် permission ပေးရုံပဲ လိုပါတော့တယ်
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
 
-      # ၅။ အသစ်ရလာသော `./gradlew` ကို သုံးပြီး Android Debug APK ကို အောင်မြင်စွာ တည်ဆောက်မည်
+      # ပုံမှန်အတိုင်း အောင်မြင်စွာ တန်းပြီး Build လုပ်ပါပြီ
       - name: Build Android Debug APK
         run: ./gradlew assembleDebug
 
-      # ၆။ ထွက်လာသော APK ဖိုင်ကို Artifact အဖြစ် တင်ပေးမည်
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
