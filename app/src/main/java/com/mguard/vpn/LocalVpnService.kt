@@ -4,7 +4,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
-import android.content.pm.ServiceInfo
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
@@ -63,9 +62,9 @@ class LocalVpnService : VpnService(), Runnable {
             .setOngoing(true)
             .build()
 
-        // 🛡️ Android 14+ (API 34) နှင့် ကိုက်ညီအောင် တရားဝင်စံနှုန်းအတိုင်း သတ်မှတ်ခြင်း
+        // 🛡️ Manifest ပါ connectedDevice နှင့် ကိုက်ညီစေရန်၎င်း၏ နောက်ကွယ်တန်ဖိုး 0x00000010 (16) အား သုံးထားပါသည်
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_VPN)
+            startForeground(NOTIFICATION_ID, notification, 0x00000010)
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }
