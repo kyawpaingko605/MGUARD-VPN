@@ -69,12 +69,15 @@ jobs:
             sed -i 's|android:roundIcon="@mipmap/ic_launcher_round"||g' app/src/main/AndroidManifest.xml
           fi
 
-      # ၄။ အက်ပ်ဖွင့်လျှင် ဘာကြောင့် Crash တာလဲဆိုတာကို ဖုန်းမျက်နှာပြင်ပေါ် Dialog ဘောက်စ်ဖြင့် ပြသပေးမည့် စနစ်ထည့်သွင်းခြင်း
+      # ၄။ Missing Imports များကို ဖြည့်ပြီး Crash Logger စနစ် ထည့်သွင်းခြင်း
       - name: Inject Global Crash Catcher & Logger to MainActivity
         run: |
-          # MainActivity.kt (Kotlin ဖြစ်ပါက) ရှာဖွေပြီး ကုဒ်ထည့်သွင်းခြင်း
           MAIN_KT="app/src/main/java/com/mguard/vpn/MainActivity.kt"
           if [ -f "$MAIN_KT" ]; then
+            # package စာကြောင်းရဲ့ အောက်မှာ လိုအပ်တဲ့ Import တွေကို ထည့်ပေးခြင်း
+            sed -i '/package /a import android.util.Log\nimport android.content.Intent' "$MAIN_KT"
+
+            # super.onCreate ရဲ့ အပေါ်နဲ့ အောက်မှာ Crash ဖမ်းမယ့် ကုဒ်ထည့်ခြင်း
             sed -i '/super.onCreate/i \
             Thread.setDefaultUncaughtExceptionHandler { _, throwable -> \
                 val intent = Intent(this, MainActivity::class.java).apply { \
