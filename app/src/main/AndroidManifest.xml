@@ -7,8 +7,8 @@
     <!-- Android Foreground Service အခြေခံ Permission -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     
-    <!-- 🚨 Android 14+ ပေါ်တွင် VPN Foreground မောင်းနှင်ရန် တရားဝင် အဓိက လိုအပ်သော Permission (မပါရင် Crash ပါတယ်) -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_VPN" />
+    <!-- 🚨 connectedDevice သုံးထားသည့်အတွက် Android 14+ ပေါ်တွင် Crash မဖြစ်စေရန် ဤ Permission မဖြစ်မနေ ထည့်ရပါမည် -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
 
     <application
         android:allowBackup="true"
@@ -28,11 +28,11 @@
             </intent-filter>
         </activity>
 
-        <!-- 🛠️ LocalVpnService ကို Android 14 စံနှုန်းအတိုင်း vpnService ဟု တိတိကျကျ သတ်မှတ်ခြင်း -->
+        <!-- 🛠️ AAPT linking အောင်မြင်စေရန် foregroundServiceType ကို connectedDevice ဟု သတ်မှတ်ခြင်း -->
         <service
             android:name=".LocalVpnService"
             android:permission="android.permission.BIND_VPN_SERVICE"
-            android:foregroundServiceType="vpnService"
+            android:foregroundServiceType="connectedDevice"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
