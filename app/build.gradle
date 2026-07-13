@@ -19,6 +19,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    // 🚨 ဤနေရာတွင် Java Compiler ဗားရှင်းကို 17 ဟု သတ်မှတ်ပေးထားပါသည်
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // 🚨 ဤနေရာတွင် Kotlin Compiler ဗားရှင်းကိုလည်း 17 ဟု တူညီအောင် သတ်မှတ်ပေးထားပါသည်
+    kotlinOptions {
+        jvmTarget = '17'
+    }
 }
 
 dependencies {
