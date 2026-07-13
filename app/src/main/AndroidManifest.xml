@@ -12,9 +12,10 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        <!-- 🛠️ ပြင်ဆင်ချက်- ရှာမတွေ့ဖြစ်နေသော @mipmap/ic_launcher နေရာတွင် Android စနစ်သုံး Default Icon ပြောင်းလဲထားပါသည် -->
+        android:icon="@android:drawable/sym_def_app_icon"
         android:label="MGuard VPN"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@android:drawable/sym_def_app_icon"
         android:supportsRtl="true"
         android:theme="@style/Theme.MGuardVPN">
         
