@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
@@ -48,6 +49,8 @@ class LocalVpnService : VpnService(), Runnable {
 
         createNotificationChannel()
         val intent = Intent(this, MainActivity::class.java)
+        
+        // Android 12+ (API 31+) နှင့်အထက်အတွက် PendingIntent Flag ကို စနစ်တကျ သတ်မှတ်ခြင်း
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
@@ -61,7 +64,14 @@ class LocalVpnService : VpnService(), Runnable {
             .setOngoing(true)
             .build()
 
-        startForeground(NOTIFICATION_ID, notification)
+        // 🛡️ Android 14+ (API 34+) တွင် VPN Foreground Service မောင်းနှင်ရန် Type ထည့်သွင်းခြင်း
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_VPN)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_VPN)
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
 
         vpnThread = Thread(this, "MGuardVPNThread").apply {
             start()
@@ -80,7 +90,13 @@ class LocalVpnService : VpnService(), Runnable {
         }
         vpnThread?.interrupt()
         vpnThread = null
-        stopForeground(true)
+        
+        // Android ဗားရှင်းအလိုက် Foreground Service ရပ်တန့်ခြင်း
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else {
+            stopForeground(true)
+        }
         stopSelf()
     }
 
