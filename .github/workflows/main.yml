@@ -26,6 +26,10 @@ jobs:
         with:
           gradle-version: '8.6'
 
+      # 🛠️ ပြင်ဆင်ချက်- Windows CRLF (\r\n) များကို Linux LF (\n) သို့ ပြောင်းလဲပေးရန် ထည့်သွင်းထားပါသည်
+      - name: Fix Gradlew Line Endings
+        run: sed -i 's/\r$//' gradlew
+
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
 
