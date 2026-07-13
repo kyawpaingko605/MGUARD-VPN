@@ -72,21 +72,21 @@ jobs:
             # Manifest Warning သန့်ရှင်းရေးလုပ်ခြင်း
             sed -i 's|package="com.mguard.vpn"||g' app/src/main/AndroidManifest.xml
             
-            # 🛡️ AAPT linking Error ကို အပိုင်ကျော်လွှားရန် ဖြစ်နိုင်ချေရှိသမျှ စာသားအားလုံးကို AAPT သိတဲ့ 'health' (တန်ဖိုး 256 ချင်းတူ) သို့ အတင်းလဲလှယ်ခြင်း
+            # AAPT linking Error ကို အပိုင်ကျော်လွှားရန် 'health' (256) သို့ အတင်းလဲလှယ်ခြင်း
             sed -i 's|android:foregroundServiceType="vpn"|android:foregroundServiceType="health"|g' app/src/main/AndroidManifest.xml
             sed -i 's|android:foregroundServiceType="vpnService"|android:foregroundServiceType="health"|g' app/src/main/AndroidManifest.xml
             sed -i 's|android:foregroundServiceType="256"|android:foregroundServiceType="health"|g' app/src/main/AndroidManifest.xml
           fi
 
-      # ၄။ Gradle Build Tools ဗားရှင်းအား အတင်းမြှင့်တင်ခြင်း
-      - name: Force SDK 34 and Build Tools 34 inside build.gradle
+      # ၄။ Gradle Build Tools ဗားရှင်းနှင့် Java Target Compatibility အားလုံးကို ဗားရှင်း 17 သို့ အတင်းသတ်မှတ်ခြင်း
+      - name: Force SDK 34, Build Tools 34, and Java 17 Compatibility
         run: |
           if [ -f app/build.gradle ]; then
             sed -i 's/compileSdk.*/compileSdk 34/g' app/build.gradle
             sed -i 's/targetSdk.*/targetSdk 34/g' app/build.gradle
             
-            # buildToolsVersion 34.0.0 ကို ပါဝါသုံးပြီး အတင်းထည့်သွင်းခြင်း
-            sed -i '/android {/a \    buildToolsVersion "34.0.0"' app/build.gradle
+            # buildToolsVersion နှင့် Java 17 Target Options များကို အတင်းဖြည့်သွင်းခြင်း
+            sed -i '/android {/a \    buildToolsVersion "34.0.0"\n    compileOptions {\n        sourceCompatibility = JavaVersion.VERSION_17\n        targetCompatibility = JavaVersion.VERSION_17\n    }\n    kotlinOptions {\n        jvmTarget = "17"\n    }' app/build.gradle
           fi
 
       # ၅။ Android Debug APK ကို တည်ဆောက်ခြင်း
