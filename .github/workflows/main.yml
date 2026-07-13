@@ -38,19 +38,17 @@ jobs:
           sed -i 's|#!/bin/sh|#!/usr/bin/env bash|g' gradlew
           chmod +x gradlew
 
-      # ၂။ မူရင်းကုဒ်မပျက်စေဘဲ ပျောက်ဆုံးနေတဲ့ ကာလာ၊ သီမ်း နဲ့ အိုင်ကွန်တွေကို Crash မဖြစ်မည့်ပုံစံဖြင့် ယာယီဖြည့်ဆောက်ခြင်း
+      # ၂။ မူရင်းကုဒ်မပျက်စေဘဲ ပျောက်ဆုံးနေတဲ့ ကာလာ၊ သီမ်း ဖိုင်များကို ယာယီဖြည့်ဆောက်ခြင်း
       - name: Generate Missing Dummy Resources
         run: |
           mkdir -p app/src/main/res/values
 
-          # ပျောက်ဆုံးနေသော Theme ကို မူရင်းအမည်အတိုင်း ယာယီဖြည့်ပေးခြင်း
           cat <<EOF > app/src/main/res/values/themes.xml
           <resources>
               <style name="Theme.MGuardVPN" parent="android:Theme.DeviceDefault" />
           </resources>
           EOF
 
-          # layout ထဲတွင် တောင်းဆိုထားသော ကာလာအရောင် (Colors) အားလုံးကို မူရင်းအမည်အတိုင်း ယာယီဖြည့်ပေးခြင်း
           cat <<EOF > app/src/main/res/values/colors.xml
           <resources>
               <color name="bg_dark">#121212</color>
@@ -67,13 +65,39 @@ jobs:
       - name: Patch AndroidManifest for Default System Icons
         run: |
           if [ -f app/src/main/AndroidManifest.xml ]; then
-            # @mipmap/ic_launcher နေရာတွင် Android စနစ်ပါ အိုင်ကွန်အစစ်ကို အစားထိုးသည်
             sed -i 's|android:icon="@mipmap/ic_launcher"|android:icon="@android:drawable/sym_def_app_icon"|g' app/src/main/AndroidManifest.xml
-            # roundIcon ကြောင့် ထပ်မံ Crash မဖြစ်စေရန် ဖျက်ထုတ်ပေးသည်
             sed -i 's|android:roundIcon="@mipmap/ic_launcher_round"||g' app/src/main/AndroidManifest.xml
           fi
 
-      # ၄။ မူရင်းကုဒ်မပျက်စေဘဲ Java & Kotlin Compatibility အားလုံးကို ဗားရှင်း 17 သို့ အတင်းသတ်မှတ်ခြင်း (Force Override)
+      # ၄။ အက်ပ်ဖွင့်လျှင် ဘာကြောင့် Crash တာလဲဆိုတာကို ဖုန်းမျက်နှာပြင်ပေါ် Dialog ဘောက်စ်ဖြင့် ပြသပေးမည့် စနစ်ထည့်သွင်းခြင်း
+      - name: Inject Global Crash Catcher & Logger to MainActivity
+        run: |
+          # MainActivity.kt (Kotlin ဖြစ်ပါက) ရှာဖွေပြီး ကုဒ်ထည့်သွင်းခြင်း
+          MAIN_KT="app/src/main/java/com/mguard/vpn/MainActivity.kt"
+          if [ -f "$MAIN_KT" ]; then
+            sed -i '/super.onCreate/i \
+            Thread.setDefaultUncaughtExceptionHandler { _, throwable -> \
+                val intent = Intent(this, MainActivity::class.java).apply { \
+                    putExtra("CRASH_LOG", Log.getStackTraceString(throwable)) \
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK) \
+                } \
+                startActivity(intent) \
+                android.os.Process.killProcess(android.os.Process.myPid()) \
+                java.lang.System.exit(10) \
+            }' "$MAIN_KT"
+            
+            sed -i '/super.onCreate/a \
+            val crashLog = intent.getStringExtra("CRASH_LOG") \
+            if (crashLog != null) { \
+                android.app.AlertDialog.Builder(this) \
+                    .setTitle("App Crashed! Error Log:") \
+                    .setMessage(crashLog) \
+                    .setPositiveButton("OK", null) \
+                    .show() \
+            }' "$MAIN_KT"
+          fi
+
+      # ၅။ မူရင်းကုဒ်မပျက်စေဘဲ Java & Kotlin Compatibility အားလုံးကို ဗားရှင်း 17 သို့ အတင်းသတ်မှတ်ခြင်း (Force Override)
       - name: Force Java and Kotlin Target to 17
         run: |
           if [ -f app/build.gradle ]; then
@@ -91,12 +115,12 @@ jobs:
           EOF
           fi
 
-      # ၅။ Android Debug APK ကို တည်ဆောက်ခြင်း
+      # ၆။ Android Debug APK ကို တည်ဆောက်ခြင်း
       - name: Build Android Debug APK
         shell: bash
         run: ./gradlew assembleDebug
 
-      # ၆။ ထွက်လာသော APK ဖိုင်ကို တင်ပေးခြင်း
+      # ၇။ ထွက်လာသော APK ဖိုင်ကို တင်ပေးခြင်း
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
