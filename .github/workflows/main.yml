@@ -69,38 +69,7 @@ jobs:
             sed -i 's|android:roundIcon="@mipmap/ic_launcher_round"||g' app/src/main/AndroidManifest.xml
           fi
 
-      # ၄။ Missing Imports များကို ဖြည့်ပြီး Crash Logger စနစ် ထည့်သွင်းခြင်း
-      - name: Inject Global Crash Catcher & Logger to MainActivity
-        run: |
-          MAIN_KT="app/src/main/java/com/mguard/vpn/MainActivity.kt"
-          if [ -f "$MAIN_KT" ]; then
-            # package စာကြောင်းရဲ့ အောက်မှာ လိုအပ်တဲ့ Import တွေကို ထည့်ပေးခြင်း
-            sed -i '/package /a import android.util.Log\nimport android.content.Intent' "$MAIN_KT"
-
-            # super.onCreate ရဲ့ အပေါ်နဲ့ အောက်မှာ Crash ဖမ်းမယ့် ကုဒ်ထည့်ခြင်း
-            sed -i '/super.onCreate/i \
-            Thread.setDefaultUncaughtExceptionHandler { _, throwable -> \
-                val intent = Intent(this, MainActivity::class.java).apply { \
-                    putExtra("CRASH_LOG", Log.getStackTraceString(throwable)) \
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK) \
-                } \
-                startActivity(intent) \
-                android.os.Process.killProcess(android.os.Process.myPid()) \
-                java.lang.System.exit(10) \
-            }' "$MAIN_KT"
-            
-            sed -i '/super.onCreate/a \
-            val crashLog = intent.getStringExtra("CRASH_LOG") \
-            if (crashLog != null) { \
-                android.app.AlertDialog.Builder(this) \
-                    .setTitle("App Crashed! Error Log:") \
-                    .setMessage(crashLog) \
-                    .setPositiveButton("OK", null) \
-                    .show() \
-            }' "$MAIN_KT"
-          fi
-
-      # ၅။ မူရင်းကုဒ်မပျက်စေဘဲ Java & Kotlin Compatibility အားလုံးကို ဗားရှင်း 17 သို့ အတင်းသတ်မှတ်ခြင်း (Force Override)
+      # ၄။ မူရင်းကုဒ်မပျက်စေဘဲ Java & Kotlin Compatibility အားလုံးကို ဗားရှင်း 17 သို့ အတင်းသတ်မှတ်ခြင်း (Force Override)
       - name: Force Java and Kotlin Target to 17
         run: |
           if [ -f app/build.gradle ]; then
@@ -118,12 +87,12 @@ jobs:
           EOF
           fi
 
-      # ၆။ Android Debug APK ကို တည်ဆောက်ခြင်း
+      # ၅။ Android Debug APK ကို တည်ဆောက်ခြင်း
       - name: Build Android Debug APK
         shell: bash
         run: ./gradlew assembleDebug
 
-      # ၇။ ထွက်လာသော APK ဖိုင်ကို တင်ပေးခြင်း
+      # ၆။ ထွက်လာသော APK ဖိုင်ကို တင်ပေးခြင်း
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
