@@ -4,7 +4,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
-import android.content.pm.ServiceInfo
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
@@ -64,11 +63,9 @@ class LocalVpnService : VpnService(), Runnable {
             .setOngoing(true)
             .build()
 
-        // 🛡️ Android 14+ (API 34+) တွင် VPN Foreground Service မောင်းနှင်ရန် Type ထည့်သွင်းခြင်း
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_VPN)
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_VPN)
+        // 🛡️ FOREGROUND_SERVICE_TYPE_VPN နေရာတွင် Compiler Error ကျော်လွှားရန်၎င်း၏ တိုက်ရိုက်တန်ဖိုး 0x00000100 (256) ကို သုံးထားပါသည်
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notification, 0x00000100)
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }
