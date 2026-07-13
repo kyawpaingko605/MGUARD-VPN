@@ -38,15 +38,10 @@ jobs:
           sed -i 's|#!/bin/sh|#!/usr/bin/env bash|g' gradlew
           chmod +x gradlew
 
-      # ၂။ မူရင်းကုဒ်မပျက်စေဘဲ ပျောက်ဆုံးနေတဲ့ Icon, Theme နဲ့ Color ဖိုင်တွေကို ယာယီဆောက်ပေးခြင်း
+      # ၂။ မူရင်းကုဒ်မပျက်စေဘဲ ပျောက်ဆုံးနေတဲ့ ကာလာ၊ သီမ်း နဲ့ အိုင်ကွန်တွေကို Crash မဖြစ်မည့်ပုံစံဖြင့် ယာယီဖြည့်ဆောက်ခြင်း
       - name: Generate Missing Dummy Resources
         run: |
-          mkdir -p app/src/main/res/mipmap-hdpi
           mkdir -p app/src/main/res/values
-
-          # အိုင်ကွန်ပုံရိပ်ဖိုင်အတုများ ယာယီဖန်တီးခြင်း
-          touch app/src/main/res/mipmap-hdpi/ic_launcher.png
-          touch app/src/main/res/mipmap-hdpi/ic_launcher_round.png
 
           # ပျောက်ဆုံးနေသော Theme ကို မူရင်းအမည်အတိုင်း ယာယီဖြည့်ပေးခြင်း
           cat <<EOF > app/src/main/res/values/themes.xml
@@ -68,13 +63,22 @@ jobs:
           </resources>
           EOF
 
-      # ၃။ မူရင်းကုဒ်မပျက်စေဘဲ Java & Kotlin Compatibility အားလုံးကို ဗားရှင်း 17 သို့ အတင်းသတ်မှတ်ခြင်း (Force Override)
+      # ၃။ 0 KB Icon ကြောင့် Crash ဖြစ်ခြင်းကို ကာကွယ်ရန် AndroidManifest ကို အလိုအလျောက် Default System Icon သို့ လမ်းညွှန်ပြောင်းလဲခြင်း
+      - name: Patch AndroidManifest for Default System Icons
+        run: |
+          if [ -f app/src/main/AndroidManifest.xml ]; then
+            # @mipmap/ic_launcher နေရာတွင် Android စနစ်ပါ အိုင်ကွန်အစစ်ကို အစားထိုးသည်
+            sed -i 's|android:icon="@mipmap/ic_launcher"|android:icon="@android:drawable/sym_def_app_icon"|g' app/src/main/AndroidManifest.xml
+            # roundIcon ကြောင့် ထပ်မံ Crash မဖြစ်စေရန် ဖျက်ထုတ်ပေးသည်
+            sed -i 's|android:roundIcon="@mipmap/ic_launcher_round"||g' app/src/main/AndroidManifest.xml
+          fi
+
+      # ၄။ မူရင်းကုဒ်မပျက်စေဘဲ Java & Kotlin Compatibility အားလုံးကို ဗားရှင်း 17 သို့ အတင်းသတ်မှတ်ခြင်း (Force Override)
       - name: Force Java and Kotlin Target to 17
         run: |
           if [ -f app/build.gradle ]; then
             cat << 'EOF' >> app/build.gradle
 
-            // အလိုအလျောက် ဗားရှင်းညှိပေးသည့် ကုဒ်စနစ်
             android {
                 compileOptions {
                     sourceCompatibility = JavaVersion.VERSION_17
@@ -87,12 +91,12 @@ jobs:
           EOF
           fi
 
-      # ၄။ Android Debug APK ကို တည်ဆောက်ခြင်း
+      # ၅။ Android Debug APK ကို တည်ဆောက်ခြင်း
       - name: Build Android Debug APK
         shell: bash
         run: ./gradlew assembleDebug
 
-      # ၅။ ထွက်လာသော APK ဖိုင်ကို တင်ပေးခြင်း
+      # ၆။ ထွက်လာသော APK ဖိုင်ကို တင်ပေးခြင်း
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
