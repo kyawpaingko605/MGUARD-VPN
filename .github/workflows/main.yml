@@ -68,13 +68,23 @@ jobs:
           </resources>
           EOF
 
-      # ၃။ မူရင်းကုဒ်မပျက်စေဘဲ app/build.gradle ထဲက Java target Compatibility ကို ဗားရှင်း 17 သို့ အလိုအလျောက် ပြောင်းလဲခြင်း
-      - name: Fix Java and Kotlin JVM Target to 17
+      # ၃။ မူရင်းကုဒ်မပျက်စေဘဲ Java & Kotlin Compatibility အားလုံးကို ဗားရှင်း 17 သို့ အတင်းသတ်မှတ်ခြင်း (Force Override)
+      - name: Force Java and Kotlin Target to 17
         run: |
           if [ -f app/build.gradle ]; then
-            sed -i 's/sourceCompatibility JavaVersion.VERSION_1_8/sourceCompatibility JavaVersion.VERSION_17/g' app/build.gradle
-            sed -i 's/targetCompatibility JavaVersion.VERSION_1_8/targetCompatibility JavaVersion.VERSION_17/g' app/build.gradle
-            sed -i "s/jvmTarget = '1.8'/jvmTarget = '17'/g" app/build.gradle
+            cat << 'EOF' >> app/build.gradle
+
+            // အလိုအလျောက် ဗားရှင်းညှိပေးသည့် ကုဒ်စနစ်
+            android {
+                compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_17
+                    targetCompatibility = JavaVersion.VERSION_17
+                }
+                kotlinOptions {
+                    jvmTarget = '17'
+                }
+            }
+          EOF
           fi
 
       # ၄။ Android Debug APK ကို တည်ဆောက်ခြင်း
