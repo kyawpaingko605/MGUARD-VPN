@@ -31,21 +31,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # 1. အဟောင်းတွေကို ဖြတ်ထုတ်မယ်
+      # 1. အဟောင်းတွေကို အရင်ဖြတ်ထုတ်မယ်
       - name: Clean Old Gradle Wrapper
         run: |
           rm -f gradlew
           rm -rf gradle/wrapper
 
-      # 2. ပြင်ပကနေ Gradle အသစ်သွင်းမယ့်အစား GitHub Action သုံးပြီး ခေတ္တ Setup လုပ်မယ်
+      # 2. ပြင်ပကနေ Gradle 8.4 ကို ယာယီ Setup လုပ်မယ်
       - name: Setup Temporary Gradle for Regeneration
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.4
 
-      # 3. ဗားရှင်း 8.4 ရှိတဲ့ Wrapper အသစ်ကို ပရောဂျက်ထဲ ပြန်ထုတ်ပေးမယ်
+      # 3. အရေးကြီးဆုံးအဆင့် - ပရောဂျက်ထဲက build.gradle တွေကို ဝင်မဖတ်ဘဲ Wrapper သီးသန့်ဆောက်ခိုင်းမယ်
       - name: Regenerate Clean Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.4
+        run: gradle wrapper --gradle-version 8.4 --no-daemon -x evaluate -x compileJava
 
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
