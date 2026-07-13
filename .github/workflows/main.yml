@@ -16,11 +16,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # Node 22 သို့ မြှင့်ထားပြီး lock file ရှာမတွေ့တဲ့ error အတွက် path လမ်းကြောင်း ပြင်ထားပါတယ်
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
+          cache-dependency-path: './package-lock.json' # အကယ်၍ package-lock က folder ထဲမှာဆိုရင် './android_project/package-lock.json' လို့ ပြောင်းပေးပါ
 
       - name: Install Dependencies
         run: npm ci
@@ -62,22 +64,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # If gradlew wrapper is missing, we can generate it using gradle command
+      # android_project folder ထဲမှာ အလုပ်လုပ်ဖို့ working-directory သတ်မှတ်ပေးထားပါတယ်
       - name: Generate Gradle Wrapper (if missing)
+        working-directory: ./android_project
         run: |
-          cd android_project
           if [ ! -f "gradlew" ]; then
             sudo apt-get update && sudo apt-get install -y gradle
             gradle wrapper
           fi
 
       - name: Grant Execute Permission for Gradlew
-        run: chmod +x android_project/gradlew
+        working-directory: ./android_project
+        run: chmod +x gradlew
 
       - name: Build Android Debug APK
-        run: |
-          cd android_project
-          ./gradlew assembleDebug
+        working-directory: ./android_project
+        run: ./gradlew assembleDebug
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
