@@ -33,7 +33,7 @@
         <service
             android:name=".LocalVpnService"
             android:permission="android.permission.BIND_VPN_SERVICE"
-            android:foregroundServiceType="vpn"
+            android:foregroundServiceType="vpnService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
