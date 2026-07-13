@@ -38,7 +38,7 @@ jobs:
           sed -i 's|#!/bin/sh|#!/usr/bin/env bash|g' gradlew
           chmod +x gradlew
 
-      # ၂။ မူရင်းကုဒ်မပျက်စေဘဲ ပျောက်ဆုံးနေတဲ့ Resource ဖိုင်တွေကို Pipeline ပေါ်မှာပဲ ယာယီဆောက်ပေးခြင်း
+      # ၂။ မူရင်းကုဒ်မပျက်စေဘဲ ပျောက်ဆုံးနေတဲ့ Icon, Theme နဲ့ Color ဖိုင်တွေကို ယာယီဆောက်ပေးခြင်း
       - name: Generate Missing Dummy Resources
         run: |
           mkdir -p app/src/main/res/mipmap-hdpi
@@ -48,10 +48,23 @@ jobs:
           touch app/src/main/res/mipmap-hdpi/ic_launcher.png
           touch app/src/main/res/mipmap-hdpi/ic_launcher_round.png
 
-          # ပျောက်ဆုံးနေသော Theme ပိုင်ဆိုင်မှုကို မူရင်းအမည်အတိုင်း ယာယီဖြည့်ပေးခြင်း
+          # ပျောက်ဆုံးနေသော Theme ကို မူရင်းအမည်အတိုင်း ယာယီဖြည့်ပေးခြင်း
           cat <<EOF > app/src/main/res/values/themes.xml
           <resources>
               <style name="Theme.MGuardVPN" parent="android:Theme.DeviceDefault" />
+          </resources>
+          EOF
+
+          # layout ထဲတွင် တောင်းဆိုထားသော ကာလာအရောင် (Colors) အားလုံးကို မူရင်းအမည်အတိုင်း ယာယီဖြည့်ပေးခြင်း
+          cat <<EOF > app/src/main/res/values/colors.xml
+          <resources>
+              <color name="bg_dark">#121212</color>
+              <color name="bg_card">#1E1E1E</color>
+              <color name="teal_400">#26A69A</color>
+              <color name="teal_950">#002422</color>
+              <color name="text_muted">#888888</color>
+              <color name="amber_400">#FFCA28</color>
+              <color name="green_500">#4CAF50</color>
           </resources>
           EOF
 
