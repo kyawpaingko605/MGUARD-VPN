@@ -16,13 +16,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Node 22 သို့ မြှင့်ထားပြီး lock file ရှာမတွေ့တဲ့ error အတွက် path လမ်းကြောင်း ပြင်ထားပါတယ်
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
-          cache-dependency-path: './package-lock.json' # အကယ်၍ package-lock က folder ထဲမှာဆိုရင် './android_project/package-lock.json' လို့ ပြောင်းပေးပါ
+          cache-dependency-path: './package-lock.json' # Root မှာရှိတဲ့ package-lock ကို တိုက်ရိုက်ဖတ်ပါမယ်
 
       - name: Install Dependencies
         run: npm ci
@@ -37,7 +36,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-production-build
-          path: dist/
+          path: dist/ # Root မှာ ထွက်လာမယ့် dist folder
 
   # Job 2: Build the Android Application
   build-android:
@@ -64,9 +63,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # android_project folder ထဲမှာ အလုပ်လုပ်ဖို့ working-directory သတ်မှတ်ပေးထားပါတယ်
+      # gradlew wrapper မရှိရင် ပြန်ဆောက်ပေးမယ့် အပိုင်း (အပြင်ဆုံးမှာပဲ စစ်ပါတယ်)
       - name: Generate Gradle Wrapper (if missing)
-        working-directory: ./android_project
         run: |
           if [ ! -f "gradlew" ]; then
             sudo apt-get update && sudo apt-get install -y gradle
@@ -74,15 +72,13 @@ jobs:
           fi
 
       - name: Grant Execute Permission for Gradlew
-        working-directory: ./android_project
         run: chmod +x gradlew
 
       - name: Build Android Debug APK
-        working-directory: ./android_project
         run: ./gradlew assembleDebug
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
           name: mguard-vpn-debug-apk
-          path: android_project/app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/app-debug.apk # အပြင်ဆုံးမှာရှိတဲ့ app folder ဆီက apk ကို ယူပါမယ်
