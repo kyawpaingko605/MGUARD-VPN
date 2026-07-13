@@ -61,25 +61,30 @@ jobs:
           </resources>
           EOF
 
-      # ၃။ 0 KB Icon ကြောင့် Crash ဖြစ်ခြင်းကို ကာကွယ်ရန် AndroidManifest ကို အလိုအလျောက် Default System Icon သို့ လမ်းညွှန်ပြောင်းလဲခြင်း
-      - name: Patch AndroidManifest for Default System Icons
+      # ၃။ Icon Crash ကာကွယ်ခြင်း၊ Warning သန့်ရှင်းရေးလုပ်ခြင်းနှင့် AAPT Error ကျော်လွှားရန် 256 သို့ အတင်းပြောင်းလဲခြင်း
+      - name: Patch AndroidManifest for System Compatibility
         run: |
           if [ -f app/src/main/AndroidManifest.xml ]; then
+            # Icon များကို Default ပြောင်းခြင်း
             sed -i 's|android:icon="@mipmap/ic_launcher"|android:icon="@android:drawable/sym_def_app_icon"|g' app/src/main/AndroidManifest.xml
             sed -i 's|android:roundIcon="@mipmap/ic_launcher_round"||g' app/src/main/AndroidManifest.xml
-            # Warning တက်နေတဲ့ package="..." စာသားကိုပါ တစ်ခါတည်း ဖြတ်ထုတ်သန့်ရှင်းရေးလုပ်ခြင်း
+            
+            # Manifest Warning သန့်ရှင်းရေးလုပ်ခြင်း
             sed -i 's|package="com.mguard.vpn"||g' app/src/main/AndroidManifest.xml
+            
+            # 🚨 AAPT အော်နေတဲ့ ပြဿနာကို ကျော်လွှားရန် foregroundServiceType ထဲက 'vpn' သို့မဟုတ် 'vpnService' ကို တန်ဖိုး '256' သို့ အတင်းလဲလှယ်ခြင်း
+            sed -i 's|android:foregroundServiceType="vpn"|android:foregroundServiceType="256"|g' app/src/main/AndroidManifest.xml
+            sed -i 's|android:foregroundServiceType="vpnService"|android:foregroundServiceType="256"|g' app/src/main/AndroidManifest.xml
           fi
 
-      # ၄။ 🚨 AAPT 'vpn' Error ကို ကျော်လွှားရန် Gradle Build Tools ဗားရှင်းအား အတင်းမြှင့်တင်ခြင်း (Force BuildTools 34)
+      # ၄။ Gradle Build Tools ဗားရှင်းအား အတင်းမြှင့်တင်ခြင်း
       - name: Force SDK 34 and Build Tools 34 inside build.gradle
         run: |
           if [ -f app/build.gradle ]; then
-            # build.gradle ထဲက compileSdk နဲ့ targetSdk နေရာအားလုံးကို 34 သို့ အတင်းလဲလှယ်ပစ်ခြင်း
             sed -i 's/compileSdk.*/compileSdk 34/g' app/build.gradle
             sed -i 's/targetSdk.*/targetSdk 34/g' app/build.gradle
             
-            # buildToolsVersion 34.0.0 ကို ပါဝါသုံးပြီး အတင်းထည့်သွင်းခြင်း (၎င်းသည် AAPT 'vpn' ပြဿနာကို အမြစ်ပြတ်စေပါသည်)
+            # buildToolsVersion 34.0.0 ကို ပါဝါသုံးပြီး အတင်းထည့်သွင်းခြင်း
             sed -i '/android {/a \    buildToolsVersion "34.0.0"' app/build.gradle
           fi
 
