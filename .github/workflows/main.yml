@@ -7,38 +7,6 @@ on:
     branches: [ "main", "master", "develop" ]
 
 jobs:
-  # Job 1: Build the Vite + React Web Application
-  build-web:
-    name: Build Web App (Vite + React)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'npm'
-          cache-dependency-path: './package-lock.json' # Root မှာရှိတဲ့ package-lock ကို တိုက်ရိုက်ဖတ်ပါမယ်
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Run Linter
-        run: npm run lint
-
-      - name: Build Web Production Bundle
-        run: npm run build
-
-      - name: Upload Web Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: web-production-build
-          path: dist/ # Root မှာ ထွက်လာမယ့် dist folder
-
-  # Job 2: Build the Android Application
   build-android:
     name: Build Android App (Kotlin/Java)
     runs-on: ubuntu-latest
@@ -63,13 +31,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # gradlew wrapper မရှိရင် ပြန်ဆောက်ပေးမယ့် အပိုင်း (အပြင်ဆုံးမှာပဲ စစ်ပါတယ်)
-      - name: Generate Gradle Wrapper (if missing)
+      # gradlew ရော gradle-wrapper.properties ရောကို စိတ်ချရအောင် အသစ်ပြန်ဆောက်ခိုင်းတာဖြစ်ပါတယ်
+      - name: Regenerate Clean Gradle Wrapper
         run: |
-          if [ ! -f "gradlew" ]; then
-            sudo apt-get update && sudo apt-get install -y gradle
-            gradle wrapper
-          fi
+          rm -f gradlew
+          rm -rf gradle/wrapper
+          sudo apt-get update && sudo apt-get install -y gradle
+          gradle wrapper --gradle-version 8.4
 
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
@@ -81,4 +49,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mguard-vpn-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk # အပြင်ဆုံးမှာရှိတဲ့ app folder ဆီက apk ကို ယူပါမယ်
+          path: app/build/outputs/apk/debug/app-debug.apk
